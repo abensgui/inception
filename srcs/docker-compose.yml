@@ -1,0 +1,63 @@
+version: "3"
+services:
+  mariadb:
+    image : mariadb
+    container_name: cont_mariadb
+    networks:
+    - inception
+    build: 
+      context: /home/abensgui/Desktop/inception/srcs/requirements/mariadb
+    env_file: .env
+    volumes:
+    - mariadb:/var/lib/mysql
+    restart: always
+    expose:
+    - "3306"
+  nginx:
+    image : nginx
+    container_name: cont_nginx
+    volumes:
+    - wordpress:/var/www/html/wordpress
+    networks:
+    - inception
+    depends_on:
+    - wordpress
+    build: 
+      context: /home/abensgui/Desktop/inception/srcs/requirements/nginx
+      dockerfile: Dockerfile
+    env_file: .env
+    ports:
+    - "443:443"
+    restart: always
+  wordpress:
+    image : wordpress
+    container_name: cont_wordpress
+    env_file: .env
+    volumes:
+    - wordpress:/var/www/html/wordpress
+    networks:
+    - inception
+    build: 
+      context: /home/abensgui/Desktop/inception/srcs/requirements/wordpress
+      dockerfile: Dockerfile
+    depends_on:
+    - mariadb
+    restart: always
+    expose: 
+    - "9000"
+volumes:
+  wordpress:
+    driver: local 
+    driver_opts:
+      type: 'none' 
+      o: 'bind'
+      device: '/home/abensgui/data/wordpress'
+  mariadb:
+    driver: local
+    driver_opts:
+      type: 'none' 
+      o: 'bind'
+      device: '/home/abensgui/data/mariadb'
+networks:
+  inception:
+    driver: bridge      
